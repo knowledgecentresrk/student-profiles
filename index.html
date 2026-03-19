@@ -99,7 +99,7 @@
       document.getElementById('content').innerHTML = '<div class="error">Missing student ID in URL</div>';
     } else {
       // Your Apps Script JSON endpoint (replace with your actual URL)
-      const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+      const API_URL = 'https://script.google.com/macros/s/AKfycbxsHOx3D7KqVGaxkFBvAgbiQWZp3RCrj-Msw1CVlWOw9X2_cs8jNdJin1Z7H3IThHg/exec';
 
       // Fetch data with cache buster
       fetch(API_URL + '?id=' + studentId + '&t=' + Date.now())
