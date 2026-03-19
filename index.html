@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>Student Profile</title>
   <style>
-    /* Same great styling as before */
+    /* Same styling as before */
     body {
       margin: 0;
       font-family: 'Segoe UI', Roboto, sans-serif;
@@ -91,19 +91,28 @@
   </div>
 
   <script>
-    // Get student ID from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('id');
 
     if (!studentId) {
       document.getElementById('content').innerHTML = '<div class="error">Missing student ID in URL</div>';
     } else {
-      // Your Apps Script JSON endpoint (replace with your actual URL)
-      const API_URL = 'https://script.google.com/macros/s/AKfycbxsHOx3D7KqVGaxkFBvAgbiQWZp3RCrj-Msw1CVlWOw9X2_cs8jNdJin1Z7H3IThHg/exec';
-
-      // Fetch data with cache buster
-      fetch(API_URL + '?id=' + studentId + '&t=' + Date.now())
-        .then(response => response.json())
+      // Replace with your Apps Script URL
+      const API_URL = 'https://script.google.com/macros/s/AKfycbwXHbovXIgqHbod4CpjORjaf2dRG8A8FMOpYUMDWNoMOwYRJEVtO-ba-cRPgterbYQ/exec';
+      
+      // Use text/plain to avoid preflight, but send JSON in body
+      fetch(API_URL + '?id=' + studentId + '&t=' + Date.now(), {
+        method: 'GET',  // Keep as GET since we're just retrieving data
+        headers: {
+          'Content-Type': 'text/plain'  // This avoids preflight
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
         .then(data => {
           if (data.error) {
             document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
@@ -124,8 +133,8 @@
           }
         })
         .catch(err => {
-          document.getElementById('content').innerHTML = '<div class="error">Failed to load. Check connection.</div>';
-          console.error(err);
+          console.error('Error:', err);
+          document.getElementById('content').innerHTML = '<div class="error">Failed to load. Please check your connection and try again.</div>';
         });
     }
   </script>
