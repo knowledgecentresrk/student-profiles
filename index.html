@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Student Profile</title>
+  <style>
+    /* Same great styling as before */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .card {
+      max-width: 400px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .header {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      color: white;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .photo-container {
+      background: #f0f0f0;
+      text-align: center;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo {
+      max-width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+    }
+    .photo-placeholder {
+      padding: 40px;
+      color: #999;
+      font-size: 16px;
+    }
+    .name {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 16px 16px 8px;
+      color: #222;
+    }
+    .message {
+      font-size: 18px;
+      padding: 0 20px 20px;
+      color: #555;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .footer {
+      font-size: 14px;
+      color: #aaa;
+      text-align: center;
+      padding: 0 20px 20px;
+    }
+    .error, .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    .error { color: #e74c3c; }
+    .loading { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">🎓 STUDENT PROFILE</div>
+    <div id="content">
+      <div class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    // Get student ID from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('id');
+
+    if (!studentId) {
+      document.getElementById('content').innerHTML = '<div class="error">Missing student ID in URL</div>';
+    } else {
+      // Your Apps Script JSON endpoint (replace with your actual URL)
+      const API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+      // Fetch data with cache buster
+      fetch(API_URL + '?id=' + studentId + '&t=' + Date.now())
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
+          } else {
+            let photoHtml = '';
+            if (data.image) {
+              photoHtml = `<img src="${data.image}" class="photo" alt="${data.name}">`;
+            } else {
+              photoHtml = '<div class="photo-placeholder">📷 No photo</div>';
+            }
+
+            document.getElementById('content').innerHTML = `
+              <div class="photo-container">${photoHtml}</div>
+              <div class="name">${data.name || 'Unknown'}</div>
+              <div class="message">${data.message || ''}</div>
+              <div class="footer">ID: ${studentId}</div>
+            `;
+          }
+        })
+        .catch(err => {
+          document.getElementById('content').innerHTML = '<div class="error">Failed to load. Check connection.</div>';
+          console.error(err);
+        });
+    }
+  </script>
+</body>
+</html>
