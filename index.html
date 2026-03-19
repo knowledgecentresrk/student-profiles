@@ -91,28 +91,27 @@
   </div>
 
   <script>
+  <script>
   const studentId = new URLSearchParams(window.location.search).get('id');
 
   if (!studentId) {
     document.getElementById('content').innerHTML = '<div class="error">Missing student ID</div>';
   } else {
     // Show loading
-    document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+    document.getElementById('content').innerHTML = '<div class="loading">Loading profile...</div>';
 
-    // Your Apps Script URL
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyZ_EV3iE3bWR_LZ7LjDx_hCo9IOC88nHV1M46bYMl6iM0PZ9Z4GKJVXrzZfx8vufw/exec'; // <-- Replace with the URL you copied
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzV0dqis4CCAJmFFIYJy5_XFXWh_zrNhIdn-5-x_AL3uYbVItfqJ7nLM8MGQFRTk60/exec'; // Replace with actual URL
 
-    // Generate a unique callback name
     const callbackName = 'jsonp_callback_' + Date.now();
 
-    // Define the callback function globally
     window[callbackName] = function(data) {
       if (data.error) {
         document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
       } else {
         let photoHtml = '';
-        if (data.image) {
-          photoHtml = `<img src="${data.image}" class="photo" alt="${data.name}">`;
+        if (data.imageUrl) {
+          // Use image URL directly
+          photoHtml = `<img src="${data.imageUrl}" class="photo" alt="${data.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'photo-placeholder\\'>📷 Image failed to load</div>';">`;
         } else {
           photoHtml = '<div class="photo-placeholder">📷 No photo</div>';
         }
@@ -129,20 +128,20 @@
       document.body.removeChild(script);
     };
 
-    // Create script tag
     const script = document.createElement('script');
     script.src = API_URL + '?id=' + studentId + '&callback=' + callbackName + '&t=' + Date.now();
     document.body.appendChild(script);
 
-    // Timeout fallback
-    setTimeout(function() {
+    // Set timeout (15 seconds) for the JSONP request
+    const timeout = setTimeout(function() {
       if (window[callbackName]) {
-        document.getElementById('content').innerHTML = '<div class="error">Request timeout. Please try again.</div>';
+        document.getElementById('content').innerHTML = '<div class="error">Request timed out. Please check your connection and try again.</div>';
         delete window[callbackName];
         document.body.removeChild(script);
       }
-    }, 10000);
+    }, 15000); // 15 seconds
   }
+</script>
 </script>
 </body>
 </html>
