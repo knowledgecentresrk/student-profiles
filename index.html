@@ -91,52 +91,58 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const studentId = urlParams.get('id');
+  const studentId = new URLSearchParams(window.location.search).get('id');
 
-    if (!studentId) {
-      document.getElementById('content').innerHTML = '<div class="error">Missing student ID in URL</div>';
-    } else {
-      // Replace with your Apps Script URL
-      const API_URL = 'https://script.google.com/macros/s/AKfycbwXHbovXIgqHbod4CpjORjaf2dRG8A8FMOpYUMDWNoMOwYRJEVtO-ba-cRPgterbYQ/exec';
-      
-      // Use text/plain to avoid preflight, but send JSON in body
-      fetch(API_URL + '?id=' + studentId + '&t=' + Date.now(), {
-        method: 'GET',  // Keep as GET since we're just retrieving data
-        headers: {
-          'Content-Type': 'text/plain'  // This avoids preflight
+  if (!studentId) {
+    document.getElementById('content').innerHTML = '<div class="error">Missing student ID</div>';
+  } else {
+    // Show loading
+    document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+
+    // Your Apps Script URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyZ_EV3iE3bWR_LZ7LjDx_hCo9IOC88nHV1M46bYMl6iM0PZ9Z4GKJVXrzZfx8vufw/exec'; // <-- Replace with the URL you copied
+
+    // Generate a unique callback name
+    const callbackName = 'jsonp_callback_' + Date.now();
+
+    // Define the callback function globally
+    window[callbackName] = function(data) {
+      if (data.error) {
+        document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
+      } else {
+        let photoHtml = '';
+        if (data.image) {
+          photoHtml = `<img src="${data.image}" class="photo" alt="${data.name}">`;
+        } else {
+          photoHtml = '<div class="photo-placeholder">📷 No photo</div>';
         }
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.error) {
-            document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
-          } else {
-            let photoHtml = '';
-            if (data.image) {
-              photoHtml = `<img src="${data.image}" class="photo" alt="${data.name}">`;
-            } else {
-              photoHtml = '<div class="photo-placeholder">📷 No photo</div>';
-            }
 
-            document.getElementById('content').innerHTML = `
-              <div class="photo-container">${photoHtml}</div>
-              <div class="name">${data.name || 'Unknown'}</div>
-              <div class="message">${data.message || ''}</div>
-              <div class="footer">ID: ${studentId}</div>
-            `;
-          }
-        })
-        .catch(err => {
-          console.error('Error:', err);
-          document.getElementById('content').innerHTML = '<div class="error">Failed to load. Please check your connection and try again.</div>';
-        });
-    }
-  </script>
+        document.getElementById('content').innerHTML = `
+          <div class="photo-container">${photoHtml}</div>
+          <div class="name">${data.name || 'Unknown'}</div>
+          <div class="message">${data.message || ''}</div>
+          <div class="footer">ID: ${studentId}</div>
+        `;
+      }
+      // Clean up
+      delete window[callbackName];
+      document.body.removeChild(script);
+    };
+
+    // Create script tag
+    const script = document.createElement('script');
+    script.src = API_URL + '?id=' + studentId + '&callback=' + callbackName + '&t=' + Date.now();
+    document.body.appendChild(script);
+
+    // Timeout fallback
+    setTimeout(function() {
+      if (window[callbackName]) {
+        document.getElementById('content').innerHTML = '<div class="error">Request timeout. Please try again.</div>';
+        delete window[callbackName];
+        document.body.removeChild(script);
+      }
+    }, 10000);
+  }
+</script>
 </body>
 </html>
